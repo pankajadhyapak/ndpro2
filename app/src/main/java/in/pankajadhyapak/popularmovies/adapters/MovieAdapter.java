@@ -1,4 +1,4 @@
-package in.pankajadhyapak.popularmovies;
+package in.pankajadhyapak.popularmovies.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import in.pankajadhyapak.popularmovies.R;
 import in.pankajadhyapak.popularmovies.activites.MovieDetails;
 import in.pankajadhyapak.popularmovies.models.Movie;
 
@@ -38,8 +39,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Movie movie = mMovies.get(position);
         Log.e("MovieAdapter", "onBindViewHolder: "+ movie.getTitle());
-        if(movie.getPoster_path() != null) {
-            String posterUrl = "http://image.tmdb.org/t/p/w500/" + movie.getPoster_path();
+        if(movie.getPosterPath() != null) {
+            String posterUrl = "http://image.tmdb.org/t/p/w500/" + movie.getPosterPath();
             Picasso.with(mContext)
                     .load(posterUrl)
                     .placeholder(R.drawable.empty_photo)

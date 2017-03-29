@@ -29,17 +29,19 @@
             android:id="@+id/summary"
             android:layout_width="347dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/ml16"
             android:layout_marginLeft="@dimen/ml16"
             android:layout_marginRight="@dimen/ml16"
             android:layout_marginStart="@dimen/ml16"
             android:layout_marginTop="@dimen/mt50"
             android:padding="@dimen/p12"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:paddingLeft="0dp"
+            android:paddingStart="0dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView"
-            tools:layout_editor_absoluteY="194dp"
             tools:text="TextView" />
 
         <TextView
@@ -91,5 +93,52 @@
             app:layout_constraintLeft_toRightOf="@+id/releaseLabel"
             app:layout_constraintTop_toBottomOf="@+id/ratingValue"
             tools:text="2017-03-08" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="20dp"
+            android:text="Trailers"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/summary"
+            android:layout_marginStart="16dp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/trailer_rv"
+            android:layout_width="329dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="11dp"
+            android:scrollbars="horizontal"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="20dp"
+            android:text="Reviews"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/trailer_rv"
+            android:layout_marginStart="16dp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="329dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:id="@+id/review_rv"
+            app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
     </android.support.constraint.ConstraintLayout>
 </android.support.v4.widget.NestedScrollView>

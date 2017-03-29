@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Created by pankaj on 27/03/17.
  */
 
-public class ApiResponse {
+public class AllMovies {
 
     @SerializedName("page")
     private int page;

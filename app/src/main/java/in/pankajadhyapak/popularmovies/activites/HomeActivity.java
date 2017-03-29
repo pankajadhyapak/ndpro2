@@ -18,10 +18,10 @@ import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import in.pankajadhyapak.popularmovies.MovieAdapter;
+import in.pankajadhyapak.popularmovies.adapters.MovieAdapter;
 import in.pankajadhyapak.popularmovies.R;
 import in.pankajadhyapak.popularmovies.api.MovieApi;
-import in.pankajadhyapak.popularmovies.models.ApiResponse;
+import in.pankajadhyapak.popularmovies.models.AllMovies;
 import in.pankajadhyapak.popularmovies.models.Movie;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -121,16 +121,16 @@ public class HomeActivity extends AppCompatActivity {
         MovieApi api = retrofit.create(MovieApi.class);
         showLoadingDialog();
 
-        Call<ApiResponse> call = null;
+        Call<AllMovies> call = null;
         if (type == POPULAR) {
             call = api.getPopularMovies(getString(R.string.api_key));
         } else {
             call = api.getTopRatedMovies(getString(R.string.api_key));
         }
 
-        call.enqueue(new Callback<ApiResponse>() {
+        call.enqueue(new Callback<AllMovies>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(Call<AllMovies> call, Response<AllMovies> response) {
                 Log.e(TAG, "onResponse: " + response.body().getResults().size());
                 allMovies.clear();
                 allMovies.addAll(response.body().getResults());
@@ -140,7 +140,7 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<AllMovies> call, Throwable t) {
                 Log.e("onFailure", "onFailure: " + t.getMessage());
                 dismissLoadingDialog();
             }
