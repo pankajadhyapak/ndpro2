@@ -1,4 +1,4 @@
-package in.pankajadhyapak.popularmovies;
+package in.pankajadhyapak.popularmovies.activites;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +17,11 @@ import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import in.pankajadhyapak.popularmovies.models.ApiResponse;
+import in.pankajadhyapak.popularmovies.models.Movie;
+import in.pankajadhyapak.popularmovies.MovieAdapter;
+import in.pankajadhyapak.popularmovies.Api.MovieApi;
+import in.pankajadhyapak.popularmovies.R;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -32,29 +38,15 @@ public class HomeActivity extends AppCompatActivity {
     public static final String POPULARITY_DESC = "popularity.desc";
     public static final String VOTE_AVERAGE_DESC = "vote_average.desc";
 
-    @Bind(R.id.rv_list)
-    RecyclerView movieRecylerView;
-
     private ArrayList<Movie> allMovies = new ArrayList<>();
     private RecyclerView.Adapter mMovieAdapter;
     private ProgressDialog progress;
 
-    public void showLoadingDialog() {
+    @Bind(R.id.rv_list)
+    RecyclerView movieRecylerView;
 
-        if (progress == null) {
-            progress = new ProgressDialog(this);
-            progress.setTitle("Please Wait !!");
-            progress.setMessage("Getting Data");
-        }
-        progress.show();
-    }
-
-    public void dismissLoadingDialog() {
-
-        if (progress != null && progress.isShowing()) {
-            progress.dismiss();
-        }
-    }
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
 
 
     @Override
@@ -62,34 +54,37 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         ButterKnife.bind(this);
+        setSupportActionBar(toolbar);
+
         movieRecylerView.setLayoutManager(new GridLayoutManager(this, 2));
-        movieRecylerView.setHasFixedSize(true);
+        mMovieAdapter = new MovieAdapter(HomeActivity.this, allMovies);
+        movieRecylerView.setAdapter(mMovieAdapter);
 
-
-        if(savedInstanceState == null || !savedInstanceState.containsKey(MOVIE_DB_KEY)) {
-            Log.d(TAG,"MovieList not available in instancestate");
-            if(isNetworkAvailable()) {
+        if (savedInstanceState == null || !savedInstanceState.containsKey(MOVIE_DB_KEY)) {
+            Log.d(TAG, "Movie List not available in instance");
+            if (isNetworkAvailable()) {
                 getMovies(POPULARITY_DESC);
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Cannot fetch movies")
-                        .setMessage("Please connect to wifi or enable cellular data!")
-                        .create()
-                        .show();
+                showNetworkError();
             }
-        }
-        else {
+        } else {
             allMovies.clear();
             allMovies = savedInstanceState.getParcelableArrayList(MOVIE_DB_KEY);
-            mMovieAdapter = new MovieAdapter(HomeActivity.this, allMovies);
-            movieRecylerView.setAdapter(mMovieAdapter);
             mMovieAdapter.notifyDataSetChanged();
-            Log.d(TAG,"MovieList retrieved with size : " + allMovies.size());
+            Log.d(TAG, "Movie List retrieved from instance with size : " + allMovies.size());
         }
     }
 
+    private void showNetworkError() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Cannot fetch movies")
+                .setMessage("Please connect to wifi or enable cellular data!")
+                .create()
+                .show();
+    }
+
     private boolean isNetworkAvailable() {
-        ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
@@ -101,6 +96,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void getMovies(String sort) {
+
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
@@ -115,20 +111,17 @@ public class HomeActivity extends AppCompatActivity {
 
         MovieApi api = retrofit.create(MovieApi.class);
         showLoadingDialog();
-        Call<ApiResponse> call = api.getMovies(sort, "5c31fe4e68537ffcffdacd5bf0e89ca3");
+        Call<ApiResponse> call = api.getMovies(sort, getString(R.string.api_key));
 
         call.enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                Log.e("Inresponse", "onResponse: " + response.body().getResults().size());
+                Log.e(TAG, "onResponse: " + response.body().getResults().size());
                 allMovies.clear();
                 allMovies.addAll(response.body().getResults());
-                mMovieAdapter = new MovieAdapter(HomeActivity.this, allMovies);
-                movieRecylerView.setAdapter(mMovieAdapter);
-                mMovieAdapter.notifyDataSetChanged();
                 dismissLoadingDialog();
-                Log.e("Inresponse", "all movies size: " + allMovies.size());
-                updateUi();
+                mMovieAdapter.notifyDataSetChanged();
+                Log.e(TAG, "all movies size: " + allMovies.size());
             }
 
             @Override
@@ -139,15 +132,8 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private void updateUi() {
-        Log.e(TAG, "updateUi: ");
-        mMovieAdapter.notifyDataSetChanged();
-        mMovieAdapter.notifyDataSetChanged();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.home_menu, menu);
         return true;
     }
@@ -165,35 +151,36 @@ public class HomeActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            mMovieAdapter.notifyDataSetChanged();
-            return true;
-        }
-
         if (id == R.id.action_popular_movies) {
-            if(isNetworkAvailable()) {
+            if (isNetworkAvailable()) {
                 getMovies(POPULARITY_DESC);
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Cannot fetch movies")
-                        .setMessage("Please connect to wifi or enable cellular data!")
-                        .create()
-                        .show();
+                showNetworkError();
             }
             return true;
         } else {
-            if(isNetworkAvailable()) {
+            if (isNetworkAvailable()) {
                 getMovies(VOTE_AVERAGE_DESC);
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Cannot fetch movies")
-                        .setMessage("Please connect to wifi or enable cellular data!")
-                        .create()
-                        .show();
+                showNetworkError();
             }
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void showLoadingDialog() {
+        if (progress == null) {
+            progress = new ProgressDialog(this);
+            progress.setTitle("Please Wait !!");
+            progress.setMessage("Getting Your Data...");
+        }
+        progress.show();
+    }
+
+    public void dismissLoadingDialog() {
+        if (progress != null && progress.isShowing()) {
+            progress.dismiss();
+        }
     }
 }

@@ -12,14 +12,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".HomeActivity">
+        <activity android:name=".activites.HomeActivity" android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MovieDetail"></activity>
+
+        <activity
+            android:name=".activites.MovieDetails"
+            android:label="@string/title_activity_movie_details"
+            android:parentActivityName=".activites.HomeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.pankajadhyapak.popularmovies.activites.HomeActivity" />
+        </activity>
     </application>
 
 </manifest>

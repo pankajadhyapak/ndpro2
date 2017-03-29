@@ -13,6 +13,9 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import in.pankajadhyapak.popularmovies.activites.MovieDetails;
+import in.pankajadhyapak.popularmovies.models.Movie;
+
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
 
@@ -46,7 +49,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         holder.mPoster.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, MovieDetail.class);
+                Intent intent = new Intent(mContext, MovieDetails.class);
                 intent.putExtra("movie_detail", movie);
                 mContext.startActivity(intent);
             }

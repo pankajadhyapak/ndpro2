@@ -1,4 +1,4 @@
-package in.pankajadhyapak.popularmovies;
+package in.pankajadhyapak.popularmovies.models;
 
 import com.google.gson.annotations.SerializedName;
 

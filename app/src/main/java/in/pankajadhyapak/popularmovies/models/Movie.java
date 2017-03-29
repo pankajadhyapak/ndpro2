@@ -1,4 +1,4 @@
-package in.pankajadhyapak.popularmovies;
+package in.pankajadhyapak.popularmovies.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.SerializedName;
 
 public class Movie implements Parcelable {
+
     @SerializedName("original_title")
     private String title;
 
