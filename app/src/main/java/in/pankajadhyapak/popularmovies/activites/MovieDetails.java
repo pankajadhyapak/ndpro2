@@ -57,7 +57,10 @@ public class MovieDetails extends AppCompatActivity {
 
         if(movie.getPoster_path() != null) {
             String posterUrl = "http://image.tmdb.org/t/p/w500/" + movie.getPoster_path();
-            Picasso.with(this).load(posterUrl)
+            Picasso.with(this)
+                    .load(posterUrl)
+                    .placeholder(R.drawable.empty_photo)
+                    .error(R.drawable.empty_photo)
                     .into(imageView);
         } else {
             imageView.setImageResource(R.drawable.empty_photo);

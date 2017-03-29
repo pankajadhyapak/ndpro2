@@ -40,7 +40,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         Log.e("MovieAdapter", "onBindViewHolder: "+ movie.getTitle());
         if(movie.getPoster_path() != null) {
             String posterUrl = "http://image.tmdb.org/t/p/w500/" + movie.getPoster_path();
-            Picasso.with(mContext).load(posterUrl)
+            Picasso.with(mContext)
+                    .load(posterUrl)
+                    .placeholder(R.drawable.empty_photo)
+                    .error(R.drawable.empty_photo)
                     .into(holder.mPoster);
         } else {
             holder.mPoster.setImageResource(R.drawable.empty_photo);

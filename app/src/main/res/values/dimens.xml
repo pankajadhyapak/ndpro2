@@ -1,3 +1,11 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="pb30">30dp</dimen>
+    <dimen name="ml16">16dp</dimen>
+    <dimen name="mt50">50dp</dimen>
+    <dimen name="p12">12dp</dimen>
+    <dimen name="mt35">35dp</dimen>
+    <dimen name="ml12">12dp</dimen>
+    <dimen name="ml35">35dp</dimen>
+    <dimen name="mt24">24dp</dimen>
 </resources>

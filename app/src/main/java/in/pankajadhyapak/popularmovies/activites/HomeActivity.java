@@ -17,11 +17,11 @@ import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import in.pankajadhyapak.popularmovies.MovieAdapter;
+import in.pankajadhyapak.popularmovies.R;
+import in.pankajadhyapak.popularmovies.api.MovieApi;
 import in.pankajadhyapak.popularmovies.models.ApiResponse;
 import in.pankajadhyapak.popularmovies.models.Movie;
-import in.pankajadhyapak.popularmovies.MovieAdapter;
-import in.pankajadhyapak.popularmovies.Api.MovieApi;
-import in.pankajadhyapak.popularmovies.R;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -32,22 +32,19 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private static final String API_URL = "http://api.themoviedb.org/3/discover/";
+    public static final int POPULAR = 1;
+    public static final int TOP_RATED = 2;
+    private static final String API_URL = "http://api.themoviedb.org/3/movie/";
     private static final String MOVIE_DB_KEY = "movieList";
     private static final String TAG = HomeActivity.class.getSimpleName();
-    public static final String POPULARITY_DESC = "popularity.desc";
-    public static final String VOTE_AVERAGE_DESC = "vote_average.desc";
-
     private ArrayList<Movie> allMovies = new ArrayList<>();
     private RecyclerView.Adapter mMovieAdapter;
     private ProgressDialog progress;
 
     @Bind(R.id.rv_list)
     RecyclerView movieRecylerView;
-
     @Bind(R.id.toolbar)
     Toolbar toolbar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +60,7 @@ public class HomeActivity extends AppCompatActivity {
         if (savedInstanceState == null || !savedInstanceState.containsKey(MOVIE_DB_KEY)) {
             Log.d(TAG, "Movie List not available in instance");
             if (isNetworkAvailable()) {
-                getMovies(POPULARITY_DESC);
+                getMovies(POPULAR);
             } else {
                 showNetworkError();
             }
@@ -96,7 +93,7 @@ public class HomeActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    private void getMovies(String sort) {
+    private void getMovies(int type) {
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -112,7 +109,13 @@ public class HomeActivity extends AppCompatActivity {
 
         MovieApi api = retrofit.create(MovieApi.class);
         showLoadingDialog();
-        Call<ApiResponse> call = api.getMovies(sort, getString(R.string.api_key));
+
+        Call<ApiResponse> call = null;
+        if (type == POPULAR) {
+            call = api.getPopularMovies(getString(R.string.api_key));
+        } else {
+            call = api.getTopRatedMovies(getString(R.string.api_key));
+        }
 
         call.enqueue(new Callback<ApiResponse>() {
             @Override
@@ -154,14 +157,14 @@ public class HomeActivity extends AppCompatActivity {
 
         if (id == R.id.action_popular_movies) {
             if (isNetworkAvailable()) {
-                getMovies(POPULARITY_DESC);
+                getMovies(POPULAR);
             } else {
                 showNetworkError();
             }
             return true;
         } else {
             if (isNetworkAvailable()) {
-                getMovies(VOTE_AVERAGE_DESC);
+                getMovies(TOP_RATED);
             } else {
                 showNetworkError();
             }
