@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,7 +54,7 @@ public class HomeActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
 
-        movieRecylerView.setLayoutManager(new GridLayoutManager(this, 2));
+        movieRecylerView.setLayoutManager(new GridLayoutManager(this, numberOfColumns()));
         mMovieAdapter = new MovieAdapter(HomeActivity.this, allMovies);
         movieRecylerView.setAdapter(mMovieAdapter);
 
@@ -71,6 +72,16 @@ public class HomeActivity extends AppCompatActivity {
             movieRecylerView.setAdapter(mMovieAdapter);
             Log.d(TAG, "Movie List retrieved from instance with size : " + allMovies.size());
         }
+    }
+
+    private int numberOfColumns() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int widthDivider = 600;
+        int width = displayMetrics.widthPixels;
+        int nColumns = width / widthDivider;
+        if (nColumns < 2) return 2;
+        return nColumns;
     }
 
     private void showNetworkError() {

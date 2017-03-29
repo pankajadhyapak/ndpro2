@@ -8,4 +8,5 @@
     <dimen name="ml12">12dp</dimen>
     <dimen name="ml35">35dp</dimen>
     <dimen name="mt24">24dp</dimen>
+    <dimen name="border_padding_single_movie">1dp</dimen>
 </resources>
