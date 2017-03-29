@@ -70,7 +70,8 @@ public class HomeActivity extends AppCompatActivity {
         } else {
             allMovies.clear();
             allMovies = savedInstanceState.getParcelableArrayList(MOVIE_DB_KEY);
-            mMovieAdapter.notifyDataSetChanged();
+            mMovieAdapter = new MovieAdapter(HomeActivity.this, allMovies);
+            movieRecylerView.setAdapter(mMovieAdapter);
             Log.d(TAG, "Movie List retrieved from instance with size : " + allMovies.size());
         }
     }
