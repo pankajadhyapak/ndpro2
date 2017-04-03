@@ -10,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -64,6 +65,7 @@ public class MovieDetails extends AppCompatActivity {
 
     @Bind(R.id.trailer_rv)
     RecyclerView trailerRv;
+
     @Bind(R.id.review_rv)
     RecyclerView reviewRv;
 
@@ -102,15 +104,16 @@ public class MovieDetails extends AppCompatActivity {
             imageView.setImageResource(R.drawable.empty_photo);
         }
 
-        ratingValue.setText(Double.toString(movie.getVoteAverage()));
+        ratingValue.setText(String.format("Rating : %s", movie.getVoteAverage()));
         summary.setText(movie.getOverview());
-        releaseValue.setText(movie.getReleaseDate());
+        releaseValue.setText(String.format("Release : %s", movie.getReleaseDate()));
 
         trailerRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mTrailerAdapter = new TrailerAdapter(this, allTrailer);
         trailerRv.setAdapter(mTrailerAdapter);
 
-        reviewRv.setLayoutManager(new LinearLayoutManager(this));
+        reviewRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        reviewRv.setNestedScrollingEnabled(false);
         mReviewAdapter = new ReviewAdapter(this, allReviews);
         reviewRv.setAdapter(mReviewAdapter);
 
@@ -184,5 +187,22 @@ public class MovieDetails extends AppCompatActivity {
     public void onViewClicked(View v) {
         Snackbar.make(v, "Favourite this in part 2", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        supportFinishAfterTransition();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                supportFinishAfterTransition();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

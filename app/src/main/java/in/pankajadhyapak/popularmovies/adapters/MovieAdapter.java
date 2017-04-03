@@ -2,12 +2,17 @@ package in.pankajadhyapak.popularmovies.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -36,9 +41,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final Movie movie = mMovies.get(position);
         Log.e("MovieAdapter", "onBindViewHolder: "+ movie.getTitle());
+        holder.mtitle.setText(movie.getTitle());
         if(movie.getPosterPath() != null) {
             String posterUrl = "http://image.tmdb.org/t/p/w500/" + movie.getPosterPath();
             Picasso.with(mContext)
@@ -55,7 +61,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, MovieDetails.class);
                 intent.putExtra("movie_detail", movie);
-                mContext.startActivity(intent);
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation((AppCompatActivity)mContext, (View)holder.singleMovie, "Movie Poster");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    mContext.startActivity(intent, options.toBundle());
+                }else {
+                    mContext.startActivity(intent);
+                }
             }
         });
     }
@@ -68,10 +80,14 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
     public static class ViewHolder extends RecyclerView.ViewHolder{
 
         ImageView mPoster;
+        TextView mtitle;
+        FrameLayout singleMovie;
 
         public ViewHolder(View itemView) {
             super(itemView);
             mPoster = (ImageView) itemView.findViewById(R.id.moviePoster);
+            mtitle = (TextView) itemView.findViewById(R.id.movieTitle);
+            singleMovie = (FrameLayout)itemView.findViewById(R.id.singleMovie);
         }
     }
 }

@@ -3,7 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
+    android:id="@+id/singleMovie"
     android:layout_height="wrap_content"
+    android:transitionName="@string/movie_poster"
     android:padding="@dimen/border_padding_single_movie">
 
     <ImageView
@@ -14,18 +16,21 @@
         android:adjustViewBounds="true"
         android:src="@drawable/empty_photo"
         android:contentDescription="@string/movie_poster" />
-    
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/black_gradient"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Movie Title"
-        android:textStyle="bold"
-        android:textSize="30dp"
-        android:textColor="#fff"
-        android:layout_gravity="bottom"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Movie Title"
+            android:id="@+id/movieTitle"
+            android:textStyle="bold"
+            android:textColor="#fff"
+            android:background="#000"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:paddingLeft="6dp"
+            android:paddingStart="6dp"
+            android:layout_gravity="bottom"/>
+
+
 
 </FrameLayout>
