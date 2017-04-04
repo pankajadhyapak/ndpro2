@@ -1,11 +1,12 @@
 package in.pankajadhyapak.popularmovies.activites;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -14,16 +15,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import in.pankajadhyapak.popularmovies.adapters.MovieAdapter;
 import in.pankajadhyapak.popularmovies.R;
+import in.pankajadhyapak.popularmovies.adapters.MovieAdapter;
 import in.pankajadhyapak.popularmovies.api.MovieApi;
 import in.pankajadhyapak.popularmovies.models.AllMovies;
 import in.pankajadhyapak.popularmovies.models.Movie;
+import okhttp3.Cache;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -35,6 +40,8 @@ public class HomeActivity extends AppCompatActivity {
 
     public static final int POPULAR = 1;
     public static final int TOP_RATED = 2;
+
+    private int CurrentType = POPULAR;
     private static final String API_URL = "http://api.themoviedb.org/3/movie/";
     private static final String MOVIE_DB_KEY = "movieList";
     private static final String TAG = HomeActivity.class.getSimpleName();
@@ -42,10 +49,18 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView.Adapter mMovieAdapter;
     private ProgressDialog progress;
 
+
+    private int firstVisibleItem, visibleItemCount, totalItemCount;
+    private int previousTotal = 0;
+    private boolean loading = true;
+    private int visibleThreshold = 4;
+    private int pageCount = 1;
+
     @Bind(R.id.rv_list)
     RecyclerView movieRecylerView;
     @Bind(R.id.toolbar)
     Toolbar toolbar;
+    private GridLayoutManager layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,14 +69,44 @@ public class HomeActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
 
-        movieRecylerView.setLayoutManager(new GridLayoutManager(this, numberOfColumns()));
+        layout = new GridLayoutManager(this, numberOfColumns());
+        movieRecylerView.setLayoutManager(layout);
         mMovieAdapter = new MovieAdapter(HomeActivity.this, allMovies);
+        movieRecylerView.setItemAnimator(new DefaultItemAnimator());
+
+        movieRecylerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                visibleItemCount = movieRecylerView.getChildCount();
+                totalItemCount = layout.getItemCount();
+                firstVisibleItem = layout.findFirstVisibleItemPosition();
+                if (loading) {
+                    if (totalItemCount > previousTotal) {
+                        loading = false;
+                        previousTotal = totalItemCount;
+                        pageCount++;
+                    }
+                }
+                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                    if(isNetworkAvailable()){
+                        Snackbar.make(movieRecylerView, "Loading Page "+pageCount, Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                        getMovies(CurrentType);
+                        loading = true;
+                    }else {
+                        showNetworkError();
+                    }
+
+                }
+            }
+        });
         movieRecylerView.setAdapter(mMovieAdapter);
 
         if (savedInstanceState == null || !savedInstanceState.containsKey(MOVIE_DB_KEY)) {
             Log.d(TAG, "Movie List not available in instance");
-            if (isNetworkAvailable()) {
-                getMovies(POPULAR);
+            if (true) {
+                getMovies(this.CurrentType);
             } else {
                 showNetworkError();
             }
@@ -72,6 +117,8 @@ public class HomeActivity extends AppCompatActivity {
             movieRecylerView.setAdapter(mMovieAdapter);
             Log.d(TAG, "Movie List retrieved from instance with size : " + allMovies.size());
         }
+
+
     }
 
     private int numberOfColumns() {
@@ -85,11 +132,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void showNetworkError() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Cannot fetch movies")
-                .setMessage("Please connect to wifi or enable cellular data!")
-                .create()
-                .show();
+        Snackbar.make(movieRecylerView, "Please connect to wifi or enable cellular data!", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
     }
 
     private boolean isNetworkAvailable() {
@@ -108,9 +152,21 @@ public class HomeActivity extends AppCompatActivity {
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
-        httpClient.addInterceptor(logging);
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .cache(new Cache(getCacheDir(), 5 * 1024 * 1024)) // 10 MB
+                .addInterceptor(new Interceptor() {
+                    @Override public okhttp3.Response intercept(Chain chain) throws IOException {
+                        Request request = chain.request();
+                        if (isNetworkAvailable()) {
+                            request = request.newBuilder().header("Cache-Control", "public, max-age=" + 60).build();
+                        } else {
+                            request = request.newBuilder().header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7).build();
+                        }
+                        return chain.proceed(request);
+                    }
+                });
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(API_URL)
@@ -123,19 +179,23 @@ public class HomeActivity extends AppCompatActivity {
 
         Call<AllMovies> call = null;
         if (type == POPULAR) {
-            call = api.getPopularMovies(getString(R.string.api_key));
+            call = api.getPopularMovies(getString(R.string.api_key), pageCount+"");
         } else {
-            call = api.getTopRatedMovies(getString(R.string.api_key));
+            call = api.getTopRatedMovies(getString(R.string.api_key), pageCount+"");
         }
 
         call.enqueue(new Callback<AllMovies>() {
             @Override
             public void onResponse(Call<AllMovies> call, Response<AllMovies> response) {
                 Log.e(TAG, "onResponse: " + response.body().getResults().size());
-                allMovies.clear();
                 allMovies.addAll(response.body().getResults());
                 dismissLoadingDialog();
-                mMovieAdapter.notifyDataSetChanged();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mMovieAdapter.notifyDataSetChanged();
+                    }
+                });
                 Log.e(TAG, "all movies size: " + allMovies.size());
             }
 
@@ -168,14 +228,20 @@ public class HomeActivity extends AppCompatActivity {
 
         if (id == R.id.action_popular_movies) {
             if (isNetworkAvailable()) {
-                getMovies(POPULAR);
+                this.CurrentType = POPULAR;
+                this.pageCount = 1;
+                allMovies.clear();
+                getMovies(this.CurrentType);
             } else {
                 showNetworkError();
             }
             return true;
         } else {
             if (isNetworkAvailable()) {
-                getMovies(TOP_RATED);
+                this.CurrentType = TOP_RATED;
+                this.pageCount = 1;
+                allMovies.clear();
+                getMovies(this.CurrentType);
             } else {
                 showNetworkError();
             }

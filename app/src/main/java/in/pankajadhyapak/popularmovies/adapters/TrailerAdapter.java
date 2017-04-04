@@ -8,7 +8,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -35,10 +38,16 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        final Trailer trailer = mTrailers.get(position);
+        final Trailer trailer = mTrailers.get(holder.getAdapterPosition());
         Log.e("TrailerAdapter", "onBindViewHolder: "+ trailer.getName());
         holder.mTrailerName.setText(trailer.getName());
-
+        holder.mSiteName.setText("Site : " +trailer.getSite());
+        holder.mQualityName.setText("Quality : " +trailer.getSize()+"p");
+        Picasso.with(mContext)
+                .load("http://img.youtube.com/vi/"+trailer.getKey()+"/mqdefault.jpg")
+                .placeholder(R.drawable.ic_play_circle_outline_black_128dp)
+                .error(R.drawable.ic_play_circle_outline_black_128dp)
+                .into(holder.mTrailerPoster);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -56,10 +65,17 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     public static class ViewHolder extends RecyclerView.ViewHolder{
 
         TextView mTrailerName;
+        ImageView mTrailerPoster;
+        TextView mSiteName;
+        TextView mQualityName;
+
 
         public ViewHolder(View itemView) {
             super(itemView);
             mTrailerName = (TextView) itemView.findViewById(R.id.trailerName);
+            mTrailerPoster = (ImageView) itemView.findViewById(R.id.imageView2);
+            mSiteName = (TextView) itemView.findViewById(R.id.site);
+            mQualityName = (TextView) itemView.findViewById(R.id.quality);
         }
     }
 }
